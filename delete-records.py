@@ -9,7 +9,31 @@ DNS_SERVER = 'your.dns.server.ip'
 DNS_KEY_NAME = 'your-key-name'  # Replace with your TSIG key name if used
 DNS_KEY_SECRET = 'your-base64-secret'  # Replace with your TSIG key secret
 ZONE_NAME = 'your.zone.name'  # Replace with your zone name (e.g., 0.168.192.in-addr.arpa)
-
+def query_ptr_records(ip_address):
+    """
+    Query all PTR records for a given IP address.
+    :param ip_address: str, the IP address to query.
+    :return: list of PTR records.
+    """
+    try:
+        # Convert IP address to reverse DNS name
+        reverse_name = dns.reversename.from_address(ip_address)
+        
+        # Query for PTR records
+        answers = dns.resolver.resolve(reverse_name, 'PTR')
+        
+        # Extract and return the PTR records
+        ptr_records = [str(rdata) for rdata in answers]
+        return ptr_records
+    except dns.resolver.NoAnswer:
+        print(f"No PTR records found for IP address {ip_address}.")
+        return []
+    except dns.resolver.NXDOMAIN:
+        print(f"No reverse DNS entry found for IP address {ip_address}.")
+        return []
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
 # Criteria for identifying bogus records
 def is_bogus(ptr_record: str) -> bool:
     """
